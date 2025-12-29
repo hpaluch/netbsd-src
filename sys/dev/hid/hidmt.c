@@ -507,7 +507,7 @@ hidmt_enable(struct hidmt *mt)
 }
 
 int
-hidmt_ioctl(struct hidmt *mt, u_long cmd, caddr_t data, int flag,
+hidmt_ioctl(struct hidmt *mt, u_long cmd, void *data, int flag,
     struct proc *p)
 {
 	struct wsmouse_calibcoords *wsmc = (struct wsmouse_calibcoords *)data;
