@@ -55,25 +55,18 @@ const struct wsmouse_accessops imt_accessops = {
 	imt_disable,
 };
 
-static int	imt_match(struct device *, void *, void *);
-static void	imt_attach(struct device *, struct device *, void *);
-static int	imt_hidev_get_report(struct device *, int, int, void *, int);
-static int	imt_hidev_set_report(struct device *, int, int, void *, int);
-static int	imt_detach(struct device *, int);
+static int	imt_match(device_t, cfdata_t, void *);
+static void	imt_attach(device_t, device_t, void *);
+static int	imt_hidev_get_report(device_t, int, int, void *, int);
+static int	imt_hidev_set_report(device_t, int, int, void *, int);
+static int	imt_detach(device_t, int);
+static void	imt_childdet(device_t, device_t);
 
-struct cfdriver imt_cd = {
-	NULL, "imt", DV_DULL
-};
-
-const struct cfattach imt_ca = {
-	sizeof(struct imt_softc),
-	imt_match,
-	imt_attach,
-	imt_detach
-};
+CFATTACH_DECL2_NEW(imt, sizeof(struct imt_softc), imt_match, imt_attach,
+    imt_detach, NULL, NULL, imt_childdet);
 
 static int
-imt_match(struct device *parent, void *match, void *aux)
+imt_match(device_t parent, cfdata_t match, void *aux)
 {
 	struct ihidev_attach_arg *iha = (struct ihidev_attach_arg *)aux;
 	int input_rid, conf_rid, cap_rid;
@@ -96,9 +89,9 @@ imt_match(struct device *parent, void *match, void *aux)
 }
 
 static void
-imt_attach(struct device *parent, struct device *self, void *aux)
+imt_attach(device_t parent, device_t self, void *aux)
 {
-	struct imt_softc *sc = (struct imt_softc *)self;
+	struct imt_softc *sc = device_private(self);
 	struct hidmt *mt = &sc->sc_mt;
 	struct ihidev_attach_arg *iha = (struct ihidev_attach_arg *)aux;
 	int size;
@@ -130,7 +123,7 @@ imt_attach(struct device *parent, struct device *self, void *aux)
 }
 
 static int
-imt_hidev_get_report(struct device *self, int type, int id, void *data, int len)
+imt_hidev_get_report(device_t self, int type, int id, void *data, int len)
 {
 	struct imt_softc *sc = (struct imt_softc *)self;
 
@@ -139,7 +132,7 @@ imt_hidev_get_report(struct device *self, int type, int id, void *data, int len)
 }
 
 static int
-imt_hidev_set_report(struct device *self, int type, int id, void *data, int len)
+imt_hidev_set_report(device_t self, int type, int id, void *data, int len)
 {
 	struct imt_softc *sc = (struct imt_softc *)self;
 
@@ -147,10 +140,21 @@ imt_hidev_set_report(struct device *self, int type, int id, void *data, int len)
 	    id, data, len);
 }
 
-static int
-imt_detach(struct device *self, int flags)
+static void
+imt_childdet(device_t self, device_t child)
 {
-	struct imt_softc *sc = (struct imt_softc *)self;
+	struct imt_softc *sc = device_private(self);
+
+	KASSERT(KERNEL_LOCKED_P());
+
+	KASSERT(sc->sc_ms.hidms_wsmousedev == child);
+	sc->sc_ms.hidms_wsmousedev = NULL;
+}
+
+static int
+imt_detach(device_t self, int flags)
+{
+	struct ims_softc *sc = device_private(self);
 	struct hidmt *mt = &sc->sc_mt;
 
 	return hidmt_detach(mt, flags);
@@ -159,7 +163,7 @@ imt_detach(struct device *self, int flags)
 static void
 imt_intr(struct ihidev *dev, void *buf, u_int len)
 {
-	struct imt_softc *sc = (struct imt_softc *)dev;
+	struct ims_softc *sc = device_private(dev);
 	struct hidmt *mt = &sc->sc_mt;
 
 	if (!mt->sc_enabled)
