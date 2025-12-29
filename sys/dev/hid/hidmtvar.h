@@ -75,6 +75,6 @@ int	hidmt_detach(struct hidmt *, int);
 void	hidmt_disable(struct hidmt *);
 int	hidmt_enable(struct hidmt *);
 void	hidmt_input(struct hidmt *, uint8_t *, u_int);
-int	hidmt_ioctl(struct hidmt *, u_long, void *, int, struct proc *);
+int	hidmt_ioctl(struct hidmt *, u_long, void *, int, struct lwp *);
 int	hidmt_setup(struct device *, struct hidmt *, void *, int);
 int	hidmt_find_winptp_reports(const void *, int, int *, int *, int *);

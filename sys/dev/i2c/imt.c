@@ -47,7 +47,7 @@ struct imt_softc {
 int	imt_enable(void *);
 void	imt_intr(struct ihidev *, void *, u_int);
 void	imt_disable(void *);
-int	imt_ioctl(void *, u_long, void *, int, struct proc *);
+int	imt_ioctl(void *, u_long, void *, int, struct lwp *);
 
 const struct wsmouse_accessops imt_accessops = {
 	imt_enable,
@@ -196,15 +196,15 @@ imt_disable(void *v)
 }
 
 int
-imt_ioctl(void *v, u_long cmd, void *data, int flag, struct proc *p)
+imt_ioctl(void *v, u_long cmd, void *data, int flag, struct lwp *l)
 {
 	struct imt_softc *sc = v;
 	struct hidmt *mt = &sc->sc_mt;
 	int rc;
 
-	rc = ihidev_ioctl(&sc->sc_hdev, cmd, data, flag, p);
+	rc = ihidev_ioctl(&sc->sc_hdev, cmd, data, flag, l);
 	if (rc != -1)
 		return rc;
 
-	return hidmt_ioctl(mt, cmd, data, flag, p);
+	return hidmt_ioctl(mt, cmd, data, flag, l);
 }
