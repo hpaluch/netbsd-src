@@ -44,10 +44,10 @@ struct imt_softc {
 	int		sc_rep_cap;
 };
 
-int	imt_enable(void *);
-void	imt_intr(struct ihidev *, void *, u_int);
-void	imt_disable(void *);
-int	imt_ioctl(void *, u_long, void *, int, struct lwp *);
+static int	imt_enable(void *);
+static void	imt_intr(struct ihidev *, void *, u_int);
+static void	imt_disable(void *);
+static int	imt_ioctl(void *, u_long, void *, int, struct lwp *);
 
 const struct wsmouse_accessops imt_accessops = {
 	imt_enable,
@@ -55,11 +55,11 @@ const struct wsmouse_accessops imt_accessops = {
 	imt_disable,
 };
 
-int	imt_match(struct device *, void *, void *);
-void	imt_attach(struct device *, struct device *, void *);
-int	imt_hidev_get_report(struct device *, int, int, void *, int);
-int	imt_hidev_set_report(struct device *, int, int, void *, int);
-int	imt_detach(struct device *, int);
+static int	imt_match(struct device *, void *, void *);
+static void	imt_attach(struct device *, struct device *, void *);
+static int	imt_hidev_get_report(struct device *, int, int, void *, int);
+static int	imt_hidev_set_report(struct device *, int, int, void *, int);
+static int	imt_detach(struct device *, int);
 
 struct cfdriver imt_cd = {
 	NULL, "imt", DV_DULL
@@ -72,7 +72,7 @@ const struct cfattach imt_ca = {
 	imt_detach
 };
 
-int
+static int
 imt_match(struct device *parent, void *match, void *aux)
 {
 	struct ihidev_attach_arg *iha = (struct ihidev_attach_arg *)aux;
@@ -95,7 +95,7 @@ imt_match(struct device *parent, void *match, void *aux)
 	return (IMATCH_NONE);
 }
 
-void
+static void
 imt_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct imt_softc *sc = (struct imt_softc *)self;
@@ -129,7 +129,7 @@ imt_attach(struct device *parent, struct device *self, void *aux)
 	hidmt_attach(mt, &imt_accessops);
 }
 
-int
+static int
 imt_hidev_get_report(struct device *self, int type, int id, void *data, int len)
 {
 	struct imt_softc *sc = (struct imt_softc *)self;
@@ -138,7 +138,7 @@ imt_hidev_get_report(struct device *self, int type, int id, void *data, int len)
 	    id, data, len);
 }
 
-int
+static int
 imt_hidev_set_report(struct device *self, int type, int id, void *data, int len)
 {
 	struct imt_softc *sc = (struct imt_softc *)self;
@@ -147,7 +147,7 @@ imt_hidev_set_report(struct device *self, int type, int id, void *data, int len)
 	    id, data, len);
 }
 
-int
+static int
 imt_detach(struct device *self, int flags)
 {
 	struct imt_softc *sc = (struct imt_softc *)self;
@@ -156,7 +156,7 @@ imt_detach(struct device *self, int flags)
 	return hidmt_detach(mt, flags);
 }
 
-void
+static void
 imt_intr(struct ihidev *dev, void *buf, u_int len)
 {
 	struct imt_softc *sc = (struct imt_softc *)dev;
@@ -168,7 +168,7 @@ imt_intr(struct ihidev *dev, void *buf, u_int len)
 	hidmt_input(mt, (uint8_t *)buf, len);
 }
 
-int
+static int
 imt_enable(void *v)
 {
 	struct imt_softc *sc = v;
@@ -185,7 +185,7 @@ imt_enable(void *v)
 	return rv;
 }
 
-void
+static void
 imt_disable(void *v)
 {
 	struct imt_softc *sc = v;
@@ -195,7 +195,7 @@ imt_disable(void *v)
 	ihidev_close(&sc->sc_hdev);
 }
 
-int
+static int
 imt_ioctl(void *v, u_long cmd, void *data, int flag, struct lwp *l)
 {
 	struct imt_softc *sc = v;
